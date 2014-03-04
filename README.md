@@ -19,3 +19,15 @@ app. This library provides no such thing -- though it could be used by
 higher level libraries like 'web-plugins' to provide dynamic reloading
 capabilities. If you have a better name, please speak up!
 
+The next step forward is to figure out how to use GHC API in
+combination with Cabal. We would like to be able to use cabal to
+fetch, install, and load libraries from hackage. Additionally, we want
+to be able to integrate with cabal sandboxes.
+
+There are two related packages on hackage:
+
+http://hackage.haskell.org/package/scion
+http://hackage.haskell.org/package/buildwrapper
+
+These libraries do more than we need. But, hopefully than can serve as
+a good reference.
