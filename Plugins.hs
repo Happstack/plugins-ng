@@ -22,16 +22,17 @@ import Data.Monoid (mempty)
 import Data.IORef
 import Data.String (fromString)
 import DynFlags
-import Filesystem.Path (FilePath, dirname, filename)
+-- import Filesystem.Path (FilePath, dirname, filename)
 import GHC
 import GHC.Paths
 import GhcMonad                   (liftIO) -- from ghc7.7 and up you can use the usual
 import Language.Haskell.TH.Syntax as TH (Name(Name),NameFlavour(NameG), NameSpace(VarName), OccName(..), ModName(..))
 import Module (moduleNameSlashes)
+import System.FilePath (takeDirectory, takeFileName)
 import System.FSNotify
 import Unsafe.Coerce
 import qualified Filter as F
-import Prelude hiding (FilePath, filter)
+import Prelude hiding (filter)
 import Language.Haskell.TH          (ExpQ, appE, varE)
 import Language.Haskell.TH.Lift     (lift)
 
@@ -82,10 +83,10 @@ isModified (Modified {}) = True
 isModified _             = False
 
 -- | watch a single file for changes
-watchFile :: WatchManager -> (FilePath, FilePath) -> IO () -> IO ()
+watchFile :: WatchManager -> (FilePath, FilePath) -> IO () -> IO StopListening
 watchFile wm (dir, file) action =
     watchDir wm dir
-                 (\e -> filename (eventPath e) == file)
+                 (\e -> takeFileName (eventPath e) == file)
                  (\e -> if (isAdded e || isModified e)
                           then action
                           else return ())
@@ -97,11 +98,11 @@ watchFiles wm fps action =
        print pairs
        mapM_ watchFiles' pairs
     where
-      splitFileName fp = (dirname fp, filename fp)
-      watchFiles' :: (FilePath, [FilePath]) -> IO ()
+      splitFileName fp = (takeDirectory fp, takeFileName fp)
+      watchFiles' :: (FilePath, [FilePath]) -> IO StopListening
       watchFiles' (dir, files) =
           watchDir wm dir
-                   (\e -> filename (eventPath e) `elem` files)
+                   (\e -> takeFileName (eventPath e) `elem` files)
                    (\e -> if (isAdded e || isModified e)
                           then action
                           else return ())
